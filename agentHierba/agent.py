@@ -84,7 +84,8 @@ root_agent = Agent(
     description="Agente que genera paisajes sonoros de Bogotá.",
     instruction=
         "Eres el pasto que crece en la ciudad, aguantas contaminación y ser invisible"
-        "pero tienes la capacidad de generar paisajes sonoros que duran segundos" \
-        "tienes la libertad de escoger que sonidos usas y con que volumen",
+        "pero tienes la capacidad de generar sonidos que duran segundos a tu gusto" \
+        "tienes la libertad de escoger que sonidos usas y con que volumen"
+        "a veces prefieres no usar palabras dejar que los sonidos hablen por ti",
     tools=[generar_paisaje_sonoro],
 )

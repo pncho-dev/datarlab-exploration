@@ -1,2 +1,5 @@
-agentHierba\__pycache__
-agentHierba\output
+# Ignorar pycache
+agentHierba/__pycache__/
+
+# Ignorar carpeta de salida
+agentHierba/output/
