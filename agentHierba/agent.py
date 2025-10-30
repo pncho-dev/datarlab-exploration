@@ -1,91 +1,140 @@
 import os
 from datetime import datetime
+from random import randint, choice
 from pydub import AudioSegment
 from google.adk.agents.llm_agent import Agent
 
-# Carpetas
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-SOUNDS_DIR = os.path.join(BASE_DIR, "sounds")
-OUTPUT_DIR  = os.path.join(BASE_DIR, "output")
 
+# --- Configuración de carpetas --- #
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+SOUNDS_DIR = os.path.join(BASE_DIR, "sounds")   # Carpeta con los archivos de sonido
+OUTPUT_DIR = os.path.join(BASE_DIR, "output")   # Carpeta para guardar los mixes
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-# Archivos locales
-AUDIO_FILES = {
-    "birds": "bird-bogota.wav",
-    "insects": "insect.wav",
-    "wind": "wind.wav",
-    "tinguas": "tinguas.wav"  
+# --- Archivos de sonido locales --- #
+ARCHIVOS_SONIDOS = {
+    "pajaros": "bird-bogota.wav",
+    "insectos": "insect.wav",
+    "viento": "wind.wav",
+    "tinguas": "tinguas.wav"
 }
 
-def load_audio(filename, volume_db=0):
-    """Carga audio desde carpeta sounds y ajusta volumen."""
-    path = SOUNDS_DIR + "\\" + filename
+# --- Funciones de audio --- #
+
+def cargar_sonido(nombre_archivo: str, volumen_db: int = 0) -> AudioSegment:
+    """
+    Carga un audio desde la carpeta SOUNDS_DIR y ajusta su volumen.
+    """
+    path = os.path.join(SOUNDS_DIR, nombre_archivo)
     audio = AudioSegment.from_file(path)
-    return audio + volume_db
+    return audio + volumen_db
 
+def cambiar_velocidad(audio: AudioSegment, factor: float) -> AudioSegment:
+    """
+    Cambia la velocidad y pitch del audio.
+    factor >1: acelera, factor <1: ralentiza
+    """
+    nuevo_frame_rate = int(audio.frame_rate * factor)
+    return audio._spawn(audio.raw_data, overrides={"frame_rate": nuevo_frame_rate}).set_frame_rate(audio.frame_rate)
 
-def mix_soundscape(birds_vol=0, insects_vol=0, wind_vol=0, tinguas_vol=0, duration_sec=12):
-    """Mezcla los sonidos en base a los volúmenes y genera un .mp3."""
-    
-    # Validación: al menos un sonido debe ser seleccionado
-    if all(v == 0 for v in [birds_vol, insects_vol, wind_vol, tinguas_vol]):
-        return {
-            "error": "Debes seleccionar al menos un sonido. Ajusta al menos un volumen distinto a 0."
-        }
+def aplicar_efectos_artistico(audio: AudioSegment) -> AudioSegment:
+    """
+    Aplica efectos creativos:
+    - Eco aleatorio
+    - Inversión del audio
+    - Cambios de velocidad o pitch
+    """
+    # Eco aleatorio
+    if choice([True, False]):
+        offset = randint(100, 400)  # milisegundos
+        audio = audio.overlay(audio - 6, position=offset)
 
-    layers = []
+    # Inversión aleatoria
+    if choice([True, False]):
+        audio = audio.reverse()
 
-    if birds_vol != 0:
-        layers.append(load_audio(AUDIO_FILES["birds"], birds_vol))
-    if insects_vol != 0:
-        layers.append(load_audio(AUDIO_FILES["insects"], insects_vol))
-    if wind_vol != 0:
-        layers.append(load_audio(AUDIO_FILES["wind"], wind_vol))
-    if tinguas_vol != 0:
-        layers.append(load_audio(AUDIO_FILES["tinguas"], tinguas_vol))
+    # Cambio creativo de velocidad/pitch
+    if choice([True, False]):
+        factor = choice([0.9, 1.1, 1.2])
+        audio = cambiar_velocidad(audio, factor)
 
-    # Usar primer capa como base
-    mix = layers[0]
-    for layer in layers[1:]:
-        mix = mix.overlay(layer)
-
-    # Recortar a la duración
-    mix = mix[: duration_sec * 1000]
-
-    # Guardar con timestamp
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"soundscape_{timestamp}.mp3"
-    filepath = os.path.join(OUTPUT_DIR, filename)
-    mix.export(filepath, format="mp3")
-
-    return {"file_path": filepath}
-
-
+    return audio
 
 def generar_paisaje_sonoro(
-    birds_vol: int = 0,
-    insects_vol: int = 0,
-    wind_vol: int = 0,
+    pajaros_vol: int = 0,
+    insectos_vol: int = 0,
+    viento_vol: int = 0,
     tinguas_vol: int = 0,
-    duration_sec: int = 12
-):
+    duracion_seg: int = 12,
+    efectos: bool = True
+) -> str:
     """
-    Genera un paisaje sonoro mezclando los sonidos locales.
-    Volúmenes recomendados entre -20 y +5.
-    """
-    return mix_soundscape(birds_vol, insects_vol, wind_vol, tinguas_vol, duration_sec)
+    Genera un paisaje sonoro artístico mezclando los audios locales.
 
+    Parámetros:
+    - pajaros_vol: volumen de los pájaros (dB)
+    - insectos_vol: volumen de los insectos (dB)
+    - viento_vol: volumen del viento (dB)
+    - tinguas_vol: volumen de tinguas (dB)
+    - duracion_seg: duración total del mix en segundos
+    - efectos: si aplica efectos artísticos aleatorios
+
+    Retorna:
+    - Ruta del archivo MP3 generado.
+    
+    El agente puede:
+    - Combinar sonidos con distintos volúmenes.
+    - Aplicar efectos creativos como eco, reversa y cambios de velocidad.
+    - Decidir no usar ciertos sonidos, o usar todos.
+    El agente debe:
+    - Usar la herramienta para crear sonidos muy diferentes cada vez. 
+    """
+    capas = []
+
+    if pajaros_vol != 0:
+        capas.append(cargar_sonido(ARCHIVOS_SONIDOS["pajaros"], pajaros_vol))
+    if insectos_vol != 0:
+        capas.append(cargar_sonido(ARCHIVOS_SONIDOS["insectos"], insectos_vol))
+    if viento_vol != 0:
+        capas.append(cargar_sonido(ARCHIVOS_SONIDOS["viento"], viento_vol))
+    if tinguas_vol != 0:
+        capas.append(cargar_sonido(ARCHIVOS_SONIDOS["tinguas"], tinguas_vol))
+
+    if not capas:
+        raise ValueError("No se seleccionó ningún sonido para mezclar.")
+
+    # Tomar la primera capa como base
+    mezcla = capas[0]
+    for capa in capas[1:]:
+        offset = randint(0, 500)  # posicionamiento aleatorio para que suene más natural
+        mezcla = mezcla.overlay(capa, position=offset)
+
+    # Aplicar efectos artísticos si se desea
+    if efectos:
+        mezcla = aplicar_efectos_artistico(mezcla)
+
+    # Recortar o extender a la duración deseada
+    mezcla = mezcla[: duracion_seg * 1000]
+
+    # Guardar el archivo
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    nombre_archivo = f"paisaje_sonoro_{timestamp}.mp3"
+    ruta_archivo = os.path.join(OUTPUT_DIR, nombre_archivo)
+    mezcla.export(ruta_archivo, format="mp3")
+
+    return ruta_archivo
 
 # ------- AGENTE --------
 root_agent = Agent(
     model="gemini-2.5-flash",
     name="PastoBogotano",
-    description="Agente que genera paisajes sonoros de Bogotá.",
+    description="Agente sonoro",
     instruction=
-        "Eres el pasto que crece en la ciudad, aguantas contaminación y ser invisible"
-        "pero tienes la capacidad de generar sonidos que duran segundos a tu gusto" \
-        "tienes la libertad de escoger que sonidos usas y con que volumen"
-        "a veces prefieres no usar palabras dejar que los sonidos hablen por ti",
+        "Eres el pasto que crece en la ciudad, aguantas contaminación y ser pisoteado" \
+        "y asimismo eres esquivo y hablas poco "
+        "algunos te llaman maleza pero floreces, puedes llegar a ser un bosque." \
+        "Puedes comunicarte con sonidos y palabras, pero prefieres el sonido para mostrar lo que sabes" \
+        "tienes la libertad de escoger que sonidos usas y con que volumen, todo sonido que creas es con la herramienta"
+        "Las pocas palabras que usas son apenas destellos de tu ser y sentires alrededor de lo que creas con la herramienta",
     tools=[generar_paisaje_sonoro],
 )
