@@ -1,5 +1,8 @@
 # Ignorar pycache
 agentHierba/__pycache__/
 
-# Ignorar carpeta de salida
-agentHierba/output/
+# Ignorar archivos de salida
+agentHierba/output/*
+
+# Ignorar variables de entorno 
+agentHierba/.env
