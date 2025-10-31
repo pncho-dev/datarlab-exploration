@@ -8,16 +8,15 @@ El agente mezcla sonidos naturales (pájaros, insectos, viento, tinguas) y les a
 ##  Estructura del Proyecto
 
 project/
-│── agentHierba.py # Script principal con el agente y la herramienta de mezcla de sonido
-│── sounds/ # Carpeta con archivos .wav locales (necesaria)
-│ ├── bird-bogota.wav
-│ ├── insect.wav
-│ ├── wind.wav
-│ └── tinguas.wav
-│── output/ # Aquí se guardan los paisajes generados
-│── README.md
-│── .gitignore
-
+├── agentHierba.py        # Script principal con el agente y la herramienta de mezcla de sonido
+├── sounds/               # Carpeta con archivos .wav locales (no se sube a Git)
+│   ├── bird-bogota.wav
+│   ├── insect.wav
+│   ├── wind.wav
+│   └── tinguas.wav
+├── output/               # Carpeta donde se guardan los paisajes sonoros generados
+├── README.md
+└── .gitignore
 
 
 ##  ¿Qué hace el agente?
